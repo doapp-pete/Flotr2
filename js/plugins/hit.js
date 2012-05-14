@@ -58,6 +58,20 @@ Flotr.addPlugin('hit', {
 
     return success;
   },
+  
+
+  
+  drawMultipleHit: function(n){
+	  var i;
+	  console.log(n);
+	  for(i=0;i<n.dataSets.length;i++){
+		  var tempDataSet = n.dataSets[i];
+		  tempDataSet.mouse = n.mouse;
+		  this.hit.drawHit(tempDataSet);
+	  }
+	  this.prevHit = n;
+  },
+  
   /**
    * Updates the mouse tracking point on the overlay.
    */
@@ -66,9 +80,10 @@ Flotr.addPlugin('hit', {
       s = n.series;
 
     if (s.mouse.lineColor) {
+    	console.log(s.mouse);
       octx.save();
       octx.lineWidth = (s.points ? s.points.lineWidth : 1);
-      octx.strokeStyle = s.mouse.lineColor;
+      octx.strokeStyle = s.color;//s.mouse.lineColor;
       octx.fillStyle = this.processColor(s.mouse.fillColor || '#ffffff', {opacity: s.mouse.fillOpacity});
       octx.translate(this.plotOffset.left, this.plotOffset.top);
 
@@ -86,33 +101,64 @@ Flotr.addPlugin('hit', {
       octx.restore();
       this.clip(octx);
     }
+    else {
+    	console.log('error');
+    }
     this.prevHit = n;
   },
+  
+  
+  clearHits: function(){
+	  var prev = this.prevHit, i;
+
+    if (prev) {
+	  if(prev.multipleItems){
+		  for(i=0;i<prev.dataSets.length;i++){
+			  var tempDataSet = prev.dataSets[i];
+			  tempDataSet.mouse = prev.mouse;
+			  
+			  this.hit.clearHit(tempDataSet);
+		  }
+	  }
+	  else {
+		  this.hit.clearHit(prev);
+	  }
+	  //@TODO: 
+	  //After fixing Draw Moust Track re-add this in
+      //D.hide(this.mouseTrack);
+      this.prevHit = null;
+    }
+  },
+  
   /**
    * Removes the mouse tracking point from the overlay.
    */
-  clearHit: function(){
-    var prev = this.prevHit,
-        octx = this.octx,
+  clearHit: function(itemToClear){
+    var prev = itemToClear,
+        octx = this.octx, i,
         plotOffset = this.plotOffset;
     octx.save();
     octx.translate(plotOffset.left, plotOffset.top);
     if (prev) {
-      if (!this.hit.executeOnType(prev.series, 'clearHit', this.prevHit)) {
-        // TODO fix this (points) should move to general testable graph mixin
-        var
-          s = prev.series,
-          lw = (s.points ? s.points.lineWidth : 1);
-          offset = (s.points.radius || s.mouse.radius) + lw;
-        octx.clearRect(
-          prev.xaxis.d2p(prev.x) - offset,
-          prev.yaxis.d2p(prev.y) - offset,
-          offset*2,
-          offset*2
-        );
+    	console.log(prev.series);
+    	console.log(this.prevHit);
+      if (!this.hit.executeOnType(prev.series, 'clearHit', prev)) {
+	        // TODO fix this (points) should move to general testable graph mixin
+	        var
+	          s = prev.series,
+	          lw = (s.points ? s.points.lineWidth : 1);
+	          offset = (s.points.radius || s.mouse.radius) + lw;
+	        octx.clearRect(
+	          prev.xaxis.d2p(prev.x) - offset,
+	          prev.yaxis.d2p(prev.y) - offset,
+	          offset*2,
+	          offset*2
+	        );
+    	
       }
-      D.hide(this.mouseTrack);
-      this.prevHit = null;
+//
+//      D.hide(this.mouseTrack);
+//      this.prevHit = null;
     }
     octx.restore();
   },
@@ -127,7 +173,7 @@ Flotr.addPlugin('hit', {
     var
       options = this.options,
       prevHit = this.prevHit,
-      closest, sensibility, dataIndex, seriesIndex, series, value, xaxis, yaxis;
+      closest, sensibility, dataIndex, seriesIndex, series, value, xaxis, yaxis, i;
 
     if (this.series.length === 0) return;
 
@@ -165,34 +211,78 @@ Flotr.addPlugin('hit', {
         xaxis       = series.xaxis;
         yaxis       = series.yaxis;
         sensibility = 2 * series.mouse.sensibility;
+        
 
-        if
-          (options.mouse.trackAll ||
-          (closest.distanceX < sensibility / xaxis.scale &&
-          (!options.mouse.trackY || closest.distanceY < sensibility / yaxis.scale)))
+        if(options.mouse.trackAll ||
+        		(closest.distanceX < sensibility / xaxis.scale &&
+        				(!options.mouse.trackY || closest.distanceY < sensibility / yaxis.scale)
+        		)
+          )
         {
-          n.series      = series;
-          n.xaxis       = series.xaxis;
-          n.yaxis       = series.yaxis;
-          n.mouse       = series.mouse;
-          n.x           = closest.x;
-          n.y           = closest.y;
-          n.dist        = closest.distance;
-          n.index       = closest.dataIndex;
-          n.seriesIndex = seriesIndex;
+
+    		n.seriesIndex = seriesIndex;
+	        n.index       = closest.dataIndex;
+	        n.dist        = closest.distance;
+	        n.mouse       = series.mouse;
+	        n.multipleItems = false;
+
+	        if(options.mouse.trackAllPoints){
+        		//@TODO Update with the rest
+        		n.multipleItems 		= 		true;
+        		n.dataSets = this.hit.formatMultipleSeries(closest.dataIndex);
+        	}
+	        else {
+	        	n.series      = series;
+		        n.xaxis       = series.xaxis;
+		        n.yaxis       = series.yaxis;
+		        n.x           = closest.x;
+		        n.y           = closest.y;
+	        }
         }
       }
     }
 
     if (!prevHit || (prevHit.index !== n.index || prevHit.seriesIndex !== n.seriesIndex)) {
-      this.hit.clearHit();
+      this.hit.clearHits();
       if (n.series && n.mouse && n.mouse.track) {
         this.hit.drawMouseTrack(n);
         this.hit.drawHit(n);
         Flotr.EventAdapter.fire(this.el, 'flotr:hit', [n, this]);
       }
+      else if (n.multipleItems && n.mouse && n.mouse.track) {
+    	  this.hit.drawMultipleHit(n);
+          Flotr.EventAdapter.fire(this.el, 'flotr:hit', [n, this]);
+      }
+      else {
+    	  console.log('error');
+    	  console.log(n);
+      }
     }
   },
+  
+  
+  formatMultipleSeries : function (closestIndex) {
+	  var i,
+      dataSet = [];
+	  
+	  for(i=0;i<this.series.length;i++){
+		  var tempItem = {};
+		  var workingSet = this.series[i];
+		  tempItem.x = workingSet.data[closestIndex][0];
+		  tempItem.y = workingSet.data[closestIndex][1];
+		  tempItem.color = workingSet.color;
+		  tempItem.xaxis       = workingSet.xaxis;
+		  tempItem.yaxis       = workingSet.yaxis;
+//		  tempItem.dist        = closest.distance;
+		  tempItem.index       = closestIndex;
+		  tempItem.seriesIndex = i;
+		  tempItem.series = workingSet;
+		  
+		  dataSet.push(tempItem);
+	  }
+	  
+	  return dataSet;
+  }, 
 
   closest : function (mouse) {
 

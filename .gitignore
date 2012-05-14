@@ -5,3 +5,13 @@ build
 *.swo
 *.vim
 .jhw-cache
+
+.project
+
+.buildpath
+
+.settings/org.eclipse.php.core.prefs
+
+examples/js/includes.dev.js
+
+examples/js/includes.dev.js
