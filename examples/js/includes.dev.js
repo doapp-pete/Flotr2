@@ -100,7 +100,7 @@ yepnope([
 	  d2.push([1231052400000,14]);
 	
 	// Draw Graph
-	  graph = Flotr.draw(container, [ {data:d1, lines:{fill:true}}, {data:d2} ], {
+	  graph = Flotr.draw(container, [ {data:d1,format:{time:true, label:"Unique Users",labelImage:"http://sandbox.local/blue.png"}}, {data:d2, format:{label:"New Users",labelImage:"http://sandbox.local/gray.png"},lines:{fill:true}} ], {
 	  colors:['#8cbdd7','#a1a1a1'],
 	  shadowSize:0,
 	  fontColor:"#616161",
@@ -120,8 +120,10 @@ yepnope([
 	  	track: true,
 	  	trackAll: true,
 	  	trackAllPoints: true,
+	  	relative: true,
 	  	fillColor:"#efefef",
-	  	fillOpacity:1
+	  	fillOpacity:1,
+	  	trackFormatter: Flotr.customTrackFormater
 	  }
 	});
 //	  console.log(Flotr);

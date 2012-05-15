@@ -144,6 +144,43 @@ Flotr = {
   }, 
   
   /**
+   * Custom Mouse Tracker Formater
+   * 
+   */
+   customTrackFormater: function (obj){
+	   var htmlContents = '', i, dateObj;
+	   dateObj = new Date(parseInt(obj.x));
+	   htmlContents += '<h6>'+Flotr.createDateType(dateObj, 'day')+'</h6>';
+	   if(obj.multipleItems){
+		   items = obj.multipleItems;
+		   for(i=0;i<items.dataSets.length;i++){
+			   htmlContents += '<img src="'+items.dataSets[i].series.format.labelImage+'" width="13" height="13"> '+items.dataSets[i].series.format.label+': <span>'+items.dataSets[i].y+'</span><br />';
+		   }
+	   }
+	   else {
+		   //single view
+	   }
+	   return htmlContents;
+   },
+   
+   createDateType: function (dateObj, dateType){
+	   var ret;
+	   switch (dateType) {
+	      case "day": 
+	    	  ret = Flotr.Date.format(dateObj, '%D, %f %d, %y', "UTC");
+	    	  break;
+	      case "hour": 
+	    	  ret = Date.format(dateObj, '%f %d, %y', "UTC");
+	    	  break;
+	      case "minute": 
+	    	  ret = Date.format(dateObj, '%f %d, %y', "UTC");
+	    	  break;
+	    }
+	   return ret;
+   },
+  
+  
+  /**
    * Utility function to convert file size values in bytes to kB, MB, ...
    * @param value {Number} - The value to convert
    * @param precision {Number} - The number of digits after the comma (default: 2)

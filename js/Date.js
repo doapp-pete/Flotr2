@@ -18,6 +18,7 @@ Flotr.Date = {
   format: function(d, format, mode) {
     if (!d) return;
 
+    console.log(d);
     // We should maybe use an "official" date format spec, like PHP date() or ColdFusion 
     // http://fr.php.net/manual/en/function.date.php
     // http://livedocs.adobe.com/coldfusion/8/htmldocs/help.html?content=functions_c-d_29.html
@@ -32,8 +33,12 @@ Flotr.Date = {
         d: get(d, 'Date', mode).toString(),
         m: (get(d, 'Month') + 1).toString(),
         y: get(d, 'FullYear').toString(),
-        b: Flotr.Date.monthNames[get(d, 'Month', mode)]
+        f: Flotr.Date.monthFullNames[get(d, 'Month', mode)],
+        b: Flotr.Date.monthNames[get(d, 'Month', mode)],
+        D: Flotr.Date.dayNames[get(d, 'Day', mode)],
       };
+    
+    console.log(tokens);
 
     function leftPad(n){
       n += '';
@@ -203,5 +208,7 @@ Flotr.Date = {
     [0.25, "month"], [0.5, "month"], [1, "month"],  [2, "month"],   [3, "month"], [6, "month"],
     [1, "year"]
   ],
-  monthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  monthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+  monthFullNames: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+  dayNames: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
 };

@@ -2,21 +2,47 @@
 <html>
 
 <head>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Flotr Example Index Page</title>
-  <link rel="stylesheet" href="lib/codemirror/lib/codemirror.css" type="text/css" />
-  <link rel="stylesheet" href="examples.css" type="text/css" />
-  <link rel="stylesheet" href="editor.css" type="text/css" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Flotr Example Index Page</title>
+<link rel="stylesheet" href="lib/codemirror/lib/codemirror.css"
+	type="text/css" />
+<link rel="stylesheet" href="examples.css" type="text/css" />
+<link rel="stylesheet" href="editor.css" type="text/css" />
+<style>
+.line_pop_over {
+	border: 1px solid #9f9f9f;
+	float: left;
+	padding: 5px 10px;
+	background-color:#ffffff;
+	font-size: 12px;
+	font-family: "Helvetica Neue";
+	line-height: 22px;
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.18);
+	-moz-box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.18);
+	-webkit-box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.18);
+}
+
+h6 {
+	font-size: 12px;
+	margin: 0px;
+	padding: 0px;
+	margin-bottom: 2px;
+}
+
+.line_pop_over span {
+	font-weight: bold;
+}
+
+.line_pop_over img {
+	margin-right: 8px;
+}
+</style>
 </head>
 
 <body>
-  <div id="body-container">
-    <div id="content-container">
-      <div id="content">
-        <div id="examples"></div>
-      </div>
-    </div>
-  </div>
+	<h1>Flot Examples</h1>
+	<div id="placeholder" style="width: 600px; height: 300px;"></div>
+
 </body>
 
 <script type="text/javascript" src="../lib/yepnope.js"></script>
