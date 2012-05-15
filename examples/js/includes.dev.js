@@ -78,13 +78,60 @@ yepnope([
   'js/examples/advanced-markers.js',
 
   { complete : function () { 
-      if (Flotr.ExamplesCallback) {
-        Flotr.ExamplesCallback();
-      } else {
-        Examples = new Flotr.Examples({
-          node : document.getElementById('examples')
-        });
-      }
+	  var
+	  d1    = [],
+	  d2    = [],
+	  start = new Date("2009/01/01 01:00").getTime(),
+	  options,
+	  graph,
+	  i, x, o,
+	  container = document.getElementById("placeholder");
+	  
+	  d2[[],[],[],[]];
+	  
+	  d1.push([1230793200000,4]);
+	  d1.push([1230879600000,13]);
+	  d1.push([1230966000000,17]);
+	  d1.push([1231052400000,23]);
+	  
+	  d2.push([1230793200000,5]);
+	  d2.push([1230879600000,8]);
+	  d2.push([1230966000000,13]);
+	  d2.push([1231052400000,14]);
+	
+	// Draw Graph
+	  graph = Flotr.draw(container, [ {data:d1, lines:{fill:true}}, {data:d2} ], {
+	  colors:['#8cbdd7','#a1a1a1'],
+	  shadowSize:0,
+	  fontColor:"#616161",
+	  xaxis: {
+	    mode: 'time',
+	  }, 
+	  yaxis: {
+	    noTicks:2
+	  },
+	  grid: {
+	    backgroundColor:"#efefef",
+	    horizontalLines: true,
+	    verticalLines: false,
+	    color:"#e1e1e1"
+	  },
+	  mouse: {
+	  	track: true,
+	  	trackAll: true,
+	  	trackAllPoints: true,
+	  	fillColor:"#efefef",
+	  	fillOpacity:1
+	  }
+	});
+//	  console.log(Flotr);
+//      if (Flotr.ExamplesCallback) {
+//        Flotr.ExamplesCallback();
+//      } else {
+//        Examples = new Flotr.Examples({
+//          node : document.getElementById('examples')
+//        });
+//      }
     }
   }
 ]);
