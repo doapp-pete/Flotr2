@@ -21,6 +21,7 @@ Flotr.addType('pie', {
     fillColor: null,       // => fill color
     fillOpacity: 0.6,      // => opacity of the fill color, set to 1 for a solid fill, 0 hides the fill
     fontWeight: 1.5,       // => weight of the label font
+    fontFamily: 'sans-serif',
     explode: 6,            // => the number of pixels the splices will be far from the center
     sizeRatio: 0.6,        // => the size ratio of the pie relative to the plot 
     startAngle: Math.PI/4, // => the first slice start angle
@@ -97,7 +98,8 @@ Flotr.addType('pie', {
     style = {
       size : options.fontSize * 1.2,
       color : options.fontColor,
-      weight : options.fontWeight
+      weight : options.fontWeight,
+      fontFamily : options.fontFamily
     };
     
     console.log(style);
