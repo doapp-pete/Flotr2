@@ -23,6 +23,8 @@ Flotr.addType('pie', {
     explode: 6,            // => the number of pixels the splices will be far from the center
     sizeRatio: 0.6,        // => the size ratio of the pie relative to the plot 
     startAngle: Math.PI/4, // => the first slice start angle
+    labelRadius: 1.0,      // => a percent used to move the labels in and out
+    labelCenter: false,    // => true to approx center the label
     labelFormatter: Flotr.defaultPieLabelFormatter,
     pie3D: false,          // => whether to draw the pie in 3 dimenstions or not (ineffective) 
     pie3DviewAngle: (Math.PI/2 * 0.8),
@@ -57,14 +59,13 @@ Flotr.addType('pie', {
       label         = options.labelFormatter(this.total, value),
       //plotTickness  = Math.sin(series.pie.viewAngle)*series.pie.spliceThickness / vScale;
       explodeCoeff  = explode + radius + 4,
-      distX         = Math.cos(bisection) * explodeCoeff,
-      distY         = Math.sin(bisection) * explodeCoeff,
+      distX         = Math.cos(bisection) * explodeCoeff * options.labelRadius,
+      distY         = Math.sin(bisection) * explodeCoeff * options.labelRadius,
       textAlign     = distX < 0 ? 'right' : 'left',
       textBaseline  = distY > 0 ? 'top' : 'bottom',
       style,
-      x, y,
-      distX, distY;
-    
+      x, y;
+      
     context.save();
     context.translate(width / 2, height / 2);
     context.scale(1, vScale);
@@ -95,6 +96,8 @@ Flotr.addType('pie', {
       color : options.fontColor,
       weight : 1.5
     };
+    
+    console.log(style);
 
     if (label) {
       if (options.htmlText || !options.textEnabled) {
@@ -105,7 +108,13 @@ Flotr.addType('pie', {
       else {
         style.textAlign = textAlign;
         style.textBaseline = textBaseline;
-        Flotr.drawText(context, label, distX, distY, style);
+        var xOffset = 0;
+        var yOffset = 0;
+        if (options.labelCenter) {
+            xOffset = (distX > y ? -1 : 1) * label.length * options.fontSize / 2.5; // 2.5 is a trial&error fudge factor...
+            yOffset = (distY > x ? -1 : 1) * options.fontSize;
+        }
+        Flotr.drawText(context, label, distX + xOffset, distY + yOffset, style);
       }
     }
     
@@ -132,6 +141,7 @@ Flotr.addType('pie', {
   plotSlice : function (x, y, radius, startAngle, endAngle, context) {
     context.beginPath();
     context.moveTo(x, y);
+    
     context.arc(x, y, radius, startAngle, endAngle, false);
     context.lineTo(x, y);
     context.closePath();
