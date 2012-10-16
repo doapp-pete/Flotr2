@@ -1486,6 +1486,43 @@ Flotr = {
   }, 
   
   /**
+   * Custom Mouse Tracker Formater
+   * 
+   */
+   customTrackFormater: function (obj){
+	   var htmlContents = '', i, dateObj;
+	   dateObj = new Date(parseInt(obj.x));
+	   htmlContents += '<h6>'+Flotr.createDateType(dateObj, 'day')+'</h6>';
+	   if(obj.multipleItems){
+		   items = obj.multipleItems;
+		   for(i=0;i<items.dataSets.length;i++){
+			   htmlContents += '<img src="'+items.dataSets[i].series.format.labelImage+'" width="13" height="13"> '+items.dataSets[i].series.format.label+': <span>'+items.dataSets[i].y+'</span><br />';
+		   }
+	   }
+	   else {
+		   //single view
+	   }
+	   return htmlContents;
+   },
+   
+   createDateType: function (dateObj, dateType){
+	   var ret;
+	   switch (dateType) {
+	      case "day": 
+	    	  ret = Flotr.Date.format(dateObj, '%D, %f %d, %y', "UTC");
+	    	  break;
+	      case "hour": 
+	    	  ret = Flotr.Date.format(dateObj, '%f %d, %y', "UTC");
+	    	  break;
+	      case "minute": 
+	    	  ret = Flotr.Date.format(dateObj, '%f %d, %y', "UTC");
+	    	  break;
+	    }
+	   return ret;
+   },
+  
+  
+  /**
    * Utility function to convert file size values in bytes to kB, MB, ...
    * @param value {Number} - The value to convert
    * @param precision {Number} - The number of digits after the comma (default: 2)
@@ -1530,7 +1567,7 @@ Flotr = {
   floorInBase: function(n, base) {
     return base * Math.floor(n / base);
   },
-  drawText: function(ctx, text, x, y, style) {
+  drawText: function(ctx, text, x, y, style, xOffset, yOffset) {
     if (!ctx.fillText) {
       ctx.drawText(text, x, y, style);
       return;
@@ -1542,17 +1579,25 @@ Flotr = {
       textAlign: 'left',
       textBaseline: 'bottom',
       weight: 1,
-      angle: 0
+      angle: 0,
+      fontFamily: 'sans-serif'
     }, style);
+    
+    if (!xOffset) {
+        var xOffset = 0;
+    }
+    if (!yOffset) {
+        var yOffset = 0;
+    }
     
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(style.angle);
     ctx.fillStyle = style.color;
-    ctx.font = (style.weight > 1 ? "bold " : "") + (style.size*1.3) + "px sans-serif";
+    ctx.font = (style.weight > 1 ? "bold " : "") + (style.size*1.3) + "px " + style.fontFamily;
     ctx.textAlign = style.textAlign;
     ctx.textBaseline = style.textBaseline;
-    ctx.fillText(text, 0, 0);
+    ctx.fillText(text, xOffset, yOffset);
     ctx.restore();
   },
   getBestTextAlign: function(angle, style) {
@@ -1874,6 +1919,7 @@ Flotr.Date = {
   format: function(d, format, mode) {
     if (!d) return;
 
+    
     // We should maybe use an "official" date format spec, like PHP date() or ColdFusion 
     // http://fr.php.net/manual/en/function.date.php
     // http://livedocs.adobe.com/coldfusion/8/htmldocs/help.html?content=functions_c-d_29.html
@@ -1888,8 +1934,11 @@ Flotr.Date = {
         d: get(d, 'Date', mode).toString(),
         m: (get(d, 'Month') + 1).toString(),
         y: get(d, 'FullYear').toString(),
-        b: Flotr.Date.monthNames[get(d, 'Month', mode)]
+        f: Flotr.Date.monthFullNames[get(d, 'Month', mode)],
+        b: Flotr.Date.monthNames[get(d, 'Month', mode)],
+        D: Flotr.Date.dayNames[get(d, 'Day', mode)],
       };
+    
 
     function leftPad(n){
       n += '';
@@ -2059,7 +2108,9 @@ Flotr.Date = {
     [0.25, "month"], [0.5, "month"], [1, "month"],  [2, "month"],   [3, "month"], [6, "month"],
     [1, "year"]
   ],
-  monthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  monthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+  monthFullNames: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+  dayNames: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
 };
 
 (function () {
@@ -3571,7 +3622,26 @@ Flotr.addType('lines', {
       // TODO stacked lines
       if(!shadowOffset && options.fill && start){
         x1 = xScale(start[0]);
-        context.fillStyle = options.fillStyle;
+        
+        var img = new Image();
+        img.src = 'http://sandbox.local/graph/graph_bg.png';
+//        img.onload = function(){
+//
+//            // create pattern
+//            var ptrn = ctx.createPattern(img,'repeat');
+//            context.fillStyle = ptrn;
+//            context.fillRect(0,0,150,150);
+//
+//          }
+        
+        
+          // create pattern
+          var ptrn = context.createPattern(img,'repeat');
+          context.fillStyle = ptrn;
+          context.globalAlpha = .4;
+        
+        
+      //  context.fillStyle = options.fillStyle;
         context.lineTo(x2, zero);
         context.lineTo(x1, zero);
         context.lineTo(x1, yScale(start[1]));
@@ -4651,10 +4721,16 @@ Flotr.addType('pie', {
     fill: true,            // => true to fill the area from the line to the x axis, false for (transparent) no fill
     fillColor: null,       // => fill color
     fillOpacity: 0.6,      // => opacity of the fill color, set to 1 for a solid fill, 0 hides the fill
+    fontWeight: 1.5,       // => weight of the label font
+    fontFamily: 'sans-serif',
     explode: 6,            // => the number of pixels the splices will be far from the center
     sizeRatio: 0.6,        // => the size ratio of the pie relative to the plot 
     startAngle: Math.PI/4, // => the first slice start angle
+    labelRadius: 1.0,      // => a percent used to move the labels in and out
+    labelCenter: false,    // => true to approx center the label
     labelFormatter: Flotr.defaultPieLabelFormatter,
+    labelShadowSize : 0,   // => add a shadow to the labels
+    labelShadowColor : 'rgba(0,0,0,.1)',
     pie3D: false,          // => whether to draw the pie in 3 dimenstions or not (ineffective) 
     pie3DviewAngle: (Math.PI/2 * 0.8),
     pie3DspliceThickness: 20
@@ -4688,14 +4764,13 @@ Flotr.addType('pie', {
       label         = options.labelFormatter(this.total, value),
       //plotTickness  = Math.sin(series.pie.viewAngle)*series.pie.spliceThickness / vScale;
       explodeCoeff  = explode + radius + 4,
-      distX         = Math.cos(bisection) * explodeCoeff,
-      distY         = Math.sin(bisection) * explodeCoeff,
+      distX         = Math.cos(bisection) * explodeCoeff * options.labelRadius,
+      distY         = Math.sin(bisection) * explodeCoeff * options.labelRadius,
       textAlign     = distX < 0 ? 'right' : 'left',
       textBaseline  = distY > 0 ? 'top' : 'bottom',
       style,
-      x, y,
-      distX, distY;
-    
+      x, y;
+      
     context.save();
     context.translate(width / 2, height / 2);
     context.scale(1, vScale);
@@ -4724,8 +4799,15 @@ Flotr.addType('pie', {
     style = {
       size : options.fontSize * 1.2,
       color : options.fontColor,
-      weight : 1.5
+      weight : options.fontWeight,
+      fontFamily : options.fontFamily
     };
+    
+    console.log(style);
+    
+    if (options.labelCenter) {
+        textAlign = 'center';
+    }
 
     if (label) {
       if (options.htmlText || !options.textEnabled) {
@@ -4736,6 +4818,11 @@ Flotr.addType('pie', {
       else {
         style.textAlign = textAlign;
         style.textBaseline = textBaseline;
+        if (options.labelShadowSize != 0) {
+            style.color = options.labelShadowColor;
+            Flotr.drawText(context, label, distX, distY, style, options.labelShadowSize, options.labelShadowSize);
+            style.color = options.fontColor;
+        }
         Flotr.drawText(context, label, distX, distY, style);
       }
     }
@@ -4763,6 +4850,7 @@ Flotr.addType('pie', {
   plotSlice : function (x, y, radius, startAngle, endAngle, context) {
     context.beginPath();
     context.moveTo(x, y);
+    
     context.arc(x, y, radius, startAngle, endAngle, false);
     context.lineTo(x, y);
     context.closePath();
@@ -5407,346 +5495,469 @@ Flotr.addPlugin('graphGrid', {
 
 (function () {
 
-var
-  D = Flotr.DOM,
-  _ = Flotr._,
-  flotr = Flotr,
-  S_MOUSETRACK = 'opacity:0.7;background-color:#000;color:#fff;display:none;position:absolute;padding:2px 8px;-moz-border-radius:4px;border-radius:4px;white-space:nowrap;';
-
-Flotr.addPlugin('hit', {
-  callbacks: {
-    'flotr:mousemove': function(e, pos) {
-      this.hit.track(pos);
-    },
-    'flotr:click': function(pos) {
-      this.hit.track(pos);
-    },
-    'flotr:mouseout': function() {
-      this.hit.clearHit();
-    }
-  },
-  track : function (pos) {
-    if (this.options.mouse.track || _.any(this.series, function(s){return s.mouse && s.mouse.track;})) {
-      this.hit.hit(pos);
-    }
-  },
-  /**
-   * Try a method on a graph type.  If the method exists, execute it.
-   * @param {Object} series
-   * @param {String} method  Method name.
-   * @param {Array} args  Arguments applied to method.
-   * @return executed successfully or failed.
-   */
-  executeOnType: function(s, method, args){
     var
-      success = false,
-      options;
+    D = Flotr.DOM,
+        _ = Flotr._,
+        flotr = Flotr,
+        //This is the bounding box which sits around the data points.
+        S_MOUSETRACK = 'display:none;position:absolute;white-space:nowrap;';
 
-    if (!_.isArray(s)) s = [s];
-
-    function e(s, index) {
-      _.each(_.keys(flotr.graphTypes), function (type) {
-        if (s[type] && s[type].show && this[type][method]) {
-          options = this.getOptions(s, type);
-
-          options.fill = !!s.mouse.fillColor;
-          options.fillStyle = this.processColor(s.mouse.fillColor || '#ffffff', {opacity: s.mouse.fillOpacity});
-          options.color = s.mouse.lineColor;
-          options.context = this.octx;
-          options.index = index;
-
-          if (args) options.args = args;
-          this[type][method].call(this[type], options);
-          success = true;
-        }
-      }, this);
-    }
-    _.each(s, e, this);
-
-    return success;
-  },
-  /**
-   * Updates the mouse tracking point on the overlay.
-   */
-  drawHit: function(n){
-    var octx = this.octx,
-      s = n.series;
-
-    if (s.mouse.lineColor) {
-      octx.save();
-      octx.lineWidth = (s.points ? s.points.lineWidth : 1);
-      octx.strokeStyle = s.mouse.lineColor;
-      octx.fillStyle = this.processColor(s.mouse.fillColor || '#ffffff', {opacity: s.mouse.fillOpacity});
-      octx.translate(this.plotOffset.left, this.plotOffset.top);
-
-      if (!this.hit.executeOnType(s, 'drawHit', n)) {
-        var xa = n.xaxis,
-          ya = n.yaxis;
-
-        octx.beginPath();
-          // TODO fix this (points) should move to general testable graph mixin
-          octx.arc(xa.d2p(n.x), ya.d2p(n.y), s.points.radius || s.mouse.radius, 0, 2 * Math.PI, true);
-          octx.fill();
-          octx.stroke();
-        octx.closePath();
-      }
-      octx.restore();
-      this.clip(octx);
-    }
-    this.prevHit = n;
-  },
-  /**
-   * Removes the mouse tracking point from the overlay.
-   */
-  clearHit: function(){
-    var prev = this.prevHit,
-        octx = this.octx,
-        plotOffset = this.plotOffset;
-    octx.save();
-    octx.translate(plotOffset.left, plotOffset.top);
-    if (prev) {
-      if (!this.hit.executeOnType(prev.series, 'clearHit', this.prevHit)) {
-        // TODO fix this (points) should move to general testable graph mixin
-        var
-          s = prev.series,
-          lw = (s.points ? s.points.lineWidth : 1);
-          offset = (s.points.radius || s.mouse.radius) + lw;
-        octx.clearRect(
-          prev.xaxis.d2p(prev.x) - offset,
-          prev.yaxis.d2p(prev.y) - offset,
-          offset*2,
-          offset*2
-        );
-      }
-      D.hide(this.mouseTrack);
-      this.prevHit = null;
-    }
-    octx.restore();
-  },
-  /**
-   * Retrieves the nearest data point from the mouse cursor. If it's within
-   * a certain range, draw a point on the overlay canvas and display the x and y
-   * value of the data.
-   * @param {Object} mouse - Object that holds the relative x and y coordinates of the cursor.
-   */
-  hit: function(mouse){
-
-    var
-      options = this.options,
-      prevHit = this.prevHit,
-      closest, sensibility, dataIndex, seriesIndex, series, value, xaxis, yaxis;
-
-    if (this.series.length === 0) return;
-
-    // Nearest data element.
-    // dist, x, y, relX, relY, absX, absY, sAngle, eAngle, fraction, mouse,
-    // xaxis, yaxis, series, index, seriesIndex
-    n = {
-      relX : mouse.relX,
-      relY : mouse.relY,
-      absX : mouse.absX,
-      absY : mouse.absY
-    };
-
-    if (options.mouse.trackY &&
-        !options.mouse.trackAll &&
-        this.hit.executeOnType(this.series, 'hit', [mouse, n]))
-      {
-
-      if (!_.isUndefined(n.seriesIndex)) {
-        series    = this.series[n.seriesIndex];
-        n.series  = series;
-        n.mouse   = series.mouse;
-        n.xaxis   = series.xaxis;
-        n.yaxis   = series.yaxis;
-      }
-    } else {
-
-      closest = this.hit.closest(mouse);
-
-      if (closest) {
-
-        closest     = options.mouse.trackY ? closest.point : closest.x;
-        seriesIndex = closest.seriesIndex;
-        series      = this.series[seriesIndex];
-        xaxis       = series.xaxis;
-        yaxis       = series.yaxis;
-        sensibility = 2 * series.mouse.sensibility;
-
-        if
-          (options.mouse.trackAll ||
-          (closest.distanceX < sensibility / xaxis.scale &&
-          (!options.mouse.trackY || closest.distanceY < sensibility / yaxis.scale)))
-        {
-          n.series      = series;
-          n.xaxis       = series.xaxis;
-          n.yaxis       = series.yaxis;
-          n.mouse       = series.mouse;
-          n.x           = closest.x;
-          n.y           = closest.y;
-          n.dist        = closest.distance;
-          n.index       = closest.dataIndex;
-          n.seriesIndex = seriesIndex;
-        }
-      }
-    }
-
-    if (!prevHit || (prevHit.index !== n.index || prevHit.seriesIndex !== n.seriesIndex)) {
-      this.hit.clearHit();
-      if (n.series && n.mouse && n.mouse.track) {
-        this.hit.drawMouseTrack(n);
-        this.hit.drawHit(n);
-        Flotr.EventAdapter.fire(this.el, 'flotr:hit', [n, this]);
-      }
-    }
-  },
-
-  closest : function (mouse) {
-
-    var
-      series    = this.series,
-      options   = this.options,
-      relX      = mouse.relX,
-      relY      = mouse.relY,
-      compare   = Number.MAX_VALUE,
-      compareX  = Number.MAX_VALUE,
-      closest   = {},
-      closestX  = {},
-      check     = false,
-      serie, data,
-      distance, distanceX, distanceY,
-      mouseX, mouseY,
-      x, y, i, j;
-
-    function setClosest (o) {
-      o.distance = distance;
-      o.distanceX = distanceX;
-      o.distanceY = distanceY;
-      o.seriesIndex = i;
-      o.dataIndex = j;
-      o.x = x;
-      o.y = y;
-    }
-
-    for (i = 0; i < series.length; i++) {
-
-      serie = series[i];
-      data = serie.data;
-      mouseX = serie.xaxis.p2d(relX);
-      mouseY = serie.yaxis.p2d(relY);
-
-      if (data.length) check = true;
-
-      for (j = data.length; j--;) {
-
-        x = data[j][0];
-        y = data[j][1];
-
-        if (x === null || y === null) continue;
-
-        // don't check if the point isn't visible in the current range
-        if (x < serie.xaxis.min || x > serie.xaxis.max) continue;
-
-        distanceX = Math.abs(x - mouseX);
-        distanceY = Math.abs(y - mouseY);
-
-        // Skip square root for speed
-        distance = distanceX * distanceX + distanceY * distanceY;
-
-        if (distance < compare) {
-          compare = distance;
-          setClosest(closest);
-        }
-
-        if (distanceX < compareX) {
-          compareX = distanceX;
-          setClosest(closestX);
-        }
-      }
-    }
-
-    return check ? {
-      point : closest,
-      x : closestX
-    } : false;
-  },
-
-  drawMouseTrack : function (n) {
-
-    var
-      pos         = '', 
-      s           = n.series,
-      p           = n.mouse.position, 
-      m           = n.mouse.margin,
-      elStyle     = S_MOUSETRACK,
-      mouseTrack  = this.mouseTrack,
-      plotOffset  = this.plotOffset,
-      left        = plotOffset.left,
-      right       = plotOffset.right,
-      bottom      = plotOffset.bottom,
-      top         = plotOffset.top,
-      decimals    = n.mouse.trackDecimals,
-      options     = this.options;
-
-    // Create
-    if (!mouseTrack) {
-      mouseTrack = D.node('<div class="flotr-mouse-value"></div>');
-      this.mouseTrack = mouseTrack;
-      D.insert(this.el, mouseTrack);
-    }
-
-    if (!n.mouse.relative) { // absolute to the canvas
-
-      if      (p.charAt(0) == 'n') pos += 'top:' + (m + top) + 'px;bottom:auto;';
-      else if (p.charAt(0) == 's') pos += 'bottom:' + (m + bottom) + 'px;top:auto;';
-      if      (p.charAt(1) == 'e') pos += 'right:' + (m + right) + 'px;left:auto;';
-      else if (p.charAt(1) == 'w') pos += 'left:' + (m + left) + 'px;right:auto;';
-
-    // Bars
-    } else if (s.bars.show) {
-        pos += 'bottom:' + (m - top - n.yaxis.d2p(n.y/2) + this.canvasHeight) + 'px;top:auto;';
-        pos += 'left:' + (m + left + n.xaxis.d2p(n.x - options.bars.barWidth/2)) + 'px;right:auto;';
-
-    // Pie
-    } else if (s.pie.show) {
-      var center = {
-          x: (this.plotWidth)/2,
-          y: (this.plotHeight)/2
+    Flotr.addPlugin('hit', {
+        callbacks: {
+            'flotr:mousemove': function (e, pos) {
+                this.hit.track(pos);
+            },
+            'flotr:click': function (pos) {
+                this.hit.track(pos);
+            },
+            'flotr:mouseout': function () {
+                this.hit.clearHit();
+            }
         },
-        radius = (Math.min(this.canvasWidth, this.canvasHeight) * s.pie.sizeRatio) / 2,
-        bisection = n.sAngle<n.eAngle ? (n.sAngle + n.eAngle) / 2: (n.sAngle + n.eAngle + 2* Math.PI) / 2;
-      
-      pos += 'bottom:' + (m - top - center.y - Math.sin(bisection) * radius/2 + this.canvasHeight) + 'px;top:auto;';
-      pos += 'left:' + (m + left + center.x + Math.cos(bisection) * radius/2) + 'px;right:auto;';
+        track: function (pos) {
+            if (this.options.mouse.track || _.any(this.series, function (s) {
+                return s.mouse && s.mouse.track;
+            })) {
+                this.hit.hit(pos);
+            }
+        },
+        /**
+         * Try a method on a graph type.  If the method exists, execute it.
+         * @param {Object} series
+         * @param {String} method  Method name.
+         * @param {Array} args  Arguments applied to method.
+         * @return executed successfully or failed.
+         */
+        executeOnType: function (s, method, args) {
+            var
+            success = false,
+                options;
 
-    // Default
-    } else {
-      if      (p.charAt(0) == 'n') pos += 'bottom:' + (m - top - n.yaxis.d2p(n.y) + this.canvasHeight) + 'px;top:auto;';
-      else if (p.charAt(0) == 's') pos += 'top:' + (m + top + n.yaxis.d2p(n.y)) + 'px;bottom:auto;';
-      if      (p.charAt(1) == 'e') pos += 'left:' + (m + left + n.xaxis.d2p(n.x)) + 'px;right:auto;';
-      else if (p.charAt(1) == 'w') pos += 'right:' + (m - left - n.xaxis.d2p(n.x) + this.canvasWidth) + 'px;left:auto;';
-    }
+            if (!_.isArray(s)) s = [s];
 
-    elStyle += pos;
-    mouseTrack.style.cssText = elStyle;
+            function e(s, index) {
+                _.each(_.keys(flotr.graphTypes), function (type) {
+                    if (s[type] && s[type].show && this[type][method]) {
+                        options = this.getOptions(s, type);
 
-    if (!decimals || decimals < 0) decimals = 0;
-    
-    mouseTrack.innerHTML = n.mouse.trackFormatter({
-      x: n.x.toFixed(decimals), 
-      y: n.y.toFixed(decimals), 
-      series: n.series, 
-      index: n.index,
-      nearest: n,
-      fraction: n.fraction
+                        options.fill = !! s.mouse.fillColor;
+                        options.fillStyle = this.processColor(s.mouse.fillColor || '#ffffff', {
+                            opacity: s.mouse.fillOpacity
+                        });
+                        options.color = s.mouse.lineColor;
+                        options.context = this.octx;
+                        options.index = index;
+
+                        if (args) options.args = args;
+                        this[type][method].call(this[type], options);
+                        success = true;
+                    }
+                }, this);
+            }
+            _.each(s, e, this);
+
+            return success;
+        },
+
+
+
+        drawMultipleHit: function (n) {
+            var i;
+            for (i = 0; i < n.dataSets.length; i++) {
+                var tempDataSet =  this.hit.formatMultipleToSingle(n, n.dataSets[i]);
+                this.hit.drawHit(tempDataSet);
+            }
+            this.prevHit = n;
+        },
+
+        /**
+         * Updates the mouse tracking point on the overlay.
+         */
+        drawHit: function (n) {
+            var octx = this.octx,
+                s = n.series;
+
+            if (s.mouse.lineColor) {
+                
+                octx.save();
+                octx.lineWidth = (s.points ? s.points.lineWidth : 1);
+                octx.strokeStyle = s.color; //s.mouse.lineColor;
+                octx.fillStyle = this.processColor(s.mouse.fillColor || '#ffffff', {
+                    opacity: s.mouse.fillOpacity
+                });
+                octx.translate(this.plotOffset.left, this.plotOffset.top);
+                
+                if (!this.hit.executeOnType(s, 'drawHit', n)) {
+                    var xa = n.xaxis,
+                        ya = n.yaxis;
+
+                    octx.beginPath();
+                    // TODO fix this (points) should move to general testable graph mixin
+                    octx.arc(xa.d2p(n.x), ya.d2p(n.y), s.points.radius || s.mouse.radius, 0, 2 * Math.PI, true);
+                    octx.fill();
+                    octx.stroke();
+                    octx.closePath();
+                }
+                octx.restore();
+                this.clip(octx);
+            } else {
+                console.log('error');
+            }
+            this.prevHit = n;
+        },
+
+
+        clearHits: function () {
+            var prev = this.prevHit,
+                i;
+
+            if (prev) {
+                if (prev.multipleItems) {
+                    for (i = 0; i < prev.dataSets.length; i++) {
+                        var tempDataSet =  this.hit.formatMultipleToSingle(prev, prev.dataSets[i]);
+                        this.hit.clearHit(tempDataSet);
+                    }
+                } else {
+                    this.hit.clearHit(prev);
+                }
+                //@TODO: 
+                //After fixing Draw Moust Track re-add this in
+                D.hide(this.mouseTrack);
+                this.prevHit = null;
+            }
+        },
+
+        /**
+         * Removes the mouse tracking point from the overlay.
+         */
+        clearHit: function (itemToClear) {
+            var prev = itemToClear,
+                octx = this.octx,
+                i, plotOffset = this.plotOffset;
+            octx.save();
+            octx.translate(plotOffset.left, plotOffset.top);
+            if (prev) {
+                if (!this.hit.executeOnType(prev.series, 'clearHit', prev)) {
+                    // TODO fix this (points) should move to general testable graph mixin
+                    var
+                    s = prev.series,
+                        lw = (s.points ? s.points.lineWidth : 1);
+                    offset = (s.points.radius || s.mouse.radius) + lw;
+                    octx.clearRect(
+                    prev.xaxis.d2p(prev.x) - offset, prev.yaxis.d2p(prev.y) - offset, offset * 2, offset * 2);
+
+                }
+                //		moved to parent function.
+                //      D.hide(this.mouseTrack);
+                //      this.prevHit = null;
+            }
+            octx.restore();
+        },
+        /**
+         * Retrieves the nearest data point from the mouse cursor. If it's within
+         * a certain range, draw a point on the overlay canvas and display the x and y
+         * value of the data.
+         * @param {Object} mouse - Object that holds the relative x and y coordinates of the cursor.
+         */
+        hit: function (mouse) {
+
+            var
+            options = this.options,
+                prevHit = this.prevHit,
+                closest, sensibility, dataIndex, seriesIndex, series, value, xaxis, yaxis, i;
+
+            if (this.series.length === 0) return;
+
+            // Nearest data element.
+            // dist, x, y, relX, relY, absX, absY, sAngle, eAngle, fraction, mouse,
+            // xaxis, yaxis, series, index, seriesIndex
+            n = {
+                relX: mouse.relX,
+                relY: mouse.relY,
+                absX: mouse.absX,
+                absY: mouse.absY
+            };
+
+            if (options.mouse.trackY && !options.mouse.trackAll && this.hit.executeOnType(this.series, 'hit', [mouse, n])) {
+
+                if (!_.isUndefined(n.seriesIndex)) {
+                    series = this.series[n.seriesIndex];
+                    n.series = series;
+                    n.mouse = series.mouse;
+                    n.xaxis = series.xaxis;
+                    n.yaxis = series.yaxis;
+                }
+            } else {
+
+                closest = this.hit.closest(mouse);
+
+                if (closest) {
+
+                    closest = options.mouse.trackY ? closest.point : closest.x;
+                    seriesIndex = closest.seriesIndex;
+                    series = this.series[seriesIndex];
+                    xaxis = series.xaxis;
+                    yaxis = series.yaxis;
+                    sensibility = 2 * series.mouse.sensibility;
+
+
+                    if (options.mouse.trackAll || (closest.distanceX < sensibility / xaxis.scale && (!options.mouse.trackY || closest.distanceY < sensibility / yaxis.scale))) {
+
+                        n.seriesIndex = seriesIndex;
+                        n.index = closest.dataIndex;
+                        n.dist = closest.distance;
+                        n.mouse = series.mouse;
+                        n.multipleItems = false;
+
+                        if (options.mouse.trackAllPoints) {
+                            //@TODO Update with the rest
+                            n.multipleItems = true;
+                            n.dataSets = this.hit.formatMultipleSeries(closest.dataIndex);
+                        } else {
+                            n.series = series;
+                            n.xaxis = series.xaxis;
+                            n.yaxis = series.yaxis;
+                            n.x = closest.x;
+                            n.y = closest.y;
+                        }
+                    }
+                }
+            }
+
+            if (!prevHit || (prevHit.index !== n.index || prevHit.seriesIndex !== n.seriesIndex)) {
+                this.hit.clearHits();
+                if (n.series && n.mouse && n.mouse.track) {
+                    this.hit.drawMouseTrack(n);
+                    this.hit.drawHit(n);
+                    Flotr.EventAdapter.fire(this.el, 'flotr:hit', [n, this]);
+                } else if (n.multipleItems && n.mouse && n.mouse.track) {
+                    this.hit.drawMouseTrack(n);
+                    this.hit.drawMultipleHit(n);
+                    Flotr.EventAdapter.fire(this.el, 'flotr:hit', [n, this]);
+                } else {
+                    console.log('error');
+                    console.log(n);
+                }
+            }
+        },
+
+
+        formatMultipleSeries: function (closestIndex) {
+            var i, dataSet = [];
+
+            for (i = 0; i < this.series.length; i++) {
+                var tempItem = {};
+                var workingSet = this.series[i];
+                tempItem.x = workingSet.data[closestIndex][0];
+                tempItem.y = workingSet.data[closestIndex][1];
+                tempItem.color = workingSet.color;
+                tempItem.xaxis = workingSet.xaxis;
+                tempItem.yaxis = workingSet.yaxis;
+                //		  tempItem.dist        = closest.distance;
+                tempItem.index = closestIndex;
+                tempItem.seriesIndex = i;
+                tempItem.series = workingSet;
+
+                dataSet.push(tempItem);
+            }
+
+            return dataSet;
+        },
+
+        closest: function (mouse) {
+
+            var
+            series = this.series,
+                options = this.options,
+                relX = mouse.relX,
+                relY = mouse.relY,
+                compare = Number.MAX_VALUE,
+                compareX = Number.MAX_VALUE,
+                closest = {},
+                closestX = {},
+                check = false,
+                serie, data, distance, distanceX, distanceY, mouseX, mouseY, x, y, i, j;
+
+            function setClosest(o) {
+                o.distance = distance;
+                o.distanceX = distanceX;
+                o.distanceY = distanceY;
+                o.seriesIndex = i;
+                o.dataIndex = j;
+                o.x = x;
+                o.y = y;
+            }
+
+            for (i = 0; i < series.length; i++) {
+
+                serie = series[i];
+                data = serie.data;
+                mouseX = serie.xaxis.p2d(relX);
+                mouseY = serie.yaxis.p2d(relY);
+
+                if (data.length) check = true;
+
+                for (j = data.length; j--;) {
+
+                    x = data[j][0];
+                    y = data[j][1];
+
+                    if (x === null || y === null) continue;
+
+                    // don't check if the point isn't visible in the current range
+                    if (x < serie.xaxis.min || x > serie.xaxis.max) continue;
+
+                    distanceX = Math.abs(x - mouseX);
+                    distanceY = Math.abs(y - mouseY);
+
+                    // Skip square root for speed
+                    distance = distanceX * distanceX + distanceY * distanceY;
+
+                    if (distance < compare) {
+                        compare = distance;
+                        setClosest(closest);
+                    }
+
+                    if (distanceX < compareX) {
+                        compareX = distanceX;
+                        setClosest(closestX);
+                    }
+                }
+            }
+
+            return check ? {
+                point: closest,
+                x: closestX
+            } : false;
+        },
+        
+
+        drawMouseTrack: function (n) {
+            var multipleItems = false;
+        	if(n.multipleItems){
+            	multipleItems = n;
+            	//@TODO:
+            	//Always defaulting to first item for where to show the hit deal
+            	//in future we can do this for the mouse over occurance
+            	n = this.hit.formatMultipleToSingle(n, n.dataSets[0]);
+            }
+            
+            var
+            pos = '',
+                s = n.series,
+                p = n.mouse.position,
+                m = n.mouse.margin,
+                elStyle = S_MOUSETRACK,
+                mouseTrack = this.mouseTrack,
+                plotOffset = this.plotOffset,
+                left = plotOffset.left,
+                right = plotOffset.right,
+                bottom = plotOffset.bottom,
+                top = plotOffset.top,
+                decimals = n.mouse.trackDecimals,
+                options = this.options;
+
+            // Create
+            if (!mouseTrack) {
+                mouseTrack = D.node('<div class="line_pop_over"></div>');
+                this.mouseTrack = mouseTrack;
+                D.insert(this.el, mouseTrack);
+            }
+
+            if (!n.mouse.relative) { // absolute to the canvas
+                if (p.charAt(0) == 'n') pos += 'top:' + (m + top) + 'px;bottom:auto;';
+                else if (p.charAt(0) == 's') pos += 'bottom:' + (m + bottom) + 'px;top:auto;';
+                if (p.charAt(1) == 'e') pos += 'right:' + (m + right) + 'px;left:auto;';
+                else if (p.charAt(1) == 'w') pos += 'left:' + (m + left) + 'px;right:auto;';
+
+                // Bars
+            } else if (s.bars.show) {
+                pos += 'bottom:' + (m - top - n.yaxis.d2p(n.y / 2) + this.canvasHeight) + 'px;top:auto;';
+                pos += 'left:' + (m + left + n.xaxis.d2p(n.x - options.bars.barWidth / 2)) + 'px;right:auto;';
+
+                // Pie
+            } else if (s.pie.show) {
+                var center = {
+                    x: (this.plotWidth) / 2,
+                    y: (this.plotHeight) / 2
+                },
+                    radius = (Math.min(this.canvasWidth, this.canvasHeight) * s.pie.sizeRatio) / 2,
+                    bisection = n.sAngle < n.eAngle ? (n.sAngle + n.eAngle) / 2 : (n.sAngle + n.eAngle + 2 * Math.PI) / 2;
+
+                pos += 'bottom:' + (m - top - center.y - Math.sin(bisection) * radius / 2 + this.canvasHeight) + 'px;top:auto;';
+                pos += 'left:' + (m + left + center.x + Math.cos(bisection) * radius / 2) + 'px;right:auto;';
+
+                // Default
+            } else {
+            	
+            	//This modification looked to attempt to keep the tool tip inside the particular flotr box.
+            	var wT = m + left + n.xaxis.d2p(n.x);
+            	var hT = m - top - n.yaxis.d2p(n.y);
+            	
+            	
+            	if(wT>this.canvasWidth){
+            		pos += 'right:' + (m - left - n.xaxis.d2p(n.x) + this.canvasWidth) + 'px;left:auto;';
+            	}
+            	else {
+            		pos += 'left:' + wT + 'px;right:auto;';
+            	}
+            	
+            	if((hT+this.canvasHeight+90) > this.canvasHeight){
+            		pos += 'top:' + (m + top + n.yaxis.d2p(n.y)) + 'px;bottom:auto;';
+            	}
+            	else {
+            		pos += 'bottom:' + (hT + this.canvasHeight) + 'px;top:auto;';
+            	}
+            
+            	
+//            	
+//                if (p.charAt(0) == 'n'){ 
+//                	pos += 'bottom:' + (m - top - n.yaxis.d2p(n.y) + this.canvasHeight) + 'px;top:auto;';
+//                }
+//                else if (p.charAt(0) == 's'){
+//                	 pos += 'top:' + (m + top + n.yaxis.d2p(n.y)) + 'px;bottom:auto;';
+//                }
+//                
+
+//                if (p.charAt(1) == 'e') {
+//                	pos += 'left:' + (m + left + n.xaxis.d2p(n.x)) + 'px;right:auto;';
+//                }
+//                else if (p.charAt(1) == 'w'){  
+//                	pos += 'right:' + (m - left - n.xaxis.d2p(n.x) + this.canvasWidth) + 'px;left:auto;'; 
+//                }
+            }
+            elStyle += pos;
+            mouseTrack.style.cssText = elStyle;
+
+            if (!decimals || decimals < 0) decimals = 0;
+
+            mouseTrack.innerHTML = n.mouse.trackFormatter({
+                x: n.x.toFixed(decimals),
+                y: n.y.toFixed(decimals),
+                series: n.series,
+                index: n.index,
+                nearest: n,
+                fraction: n.fraction,
+                multipleItems: multipleItems
+            });
+
+            D.show(mouseTrack);
+        },
+        
+
+        formatMultipleToSingle : function (n, dataSet) {
+        	var returnObj = {};
+        	for(key in dataSet){
+        		//populate returnObject
+        		returnObj[key] = dataSet[key];
+        	}
+        	returnObj.mouse = n.mouse;
+        	
+        	return returnObj;
+        }
+
     });
-
-    D.show(mouseTrack);
-  }
-
-});
 })();
-
 /** 
  * Selection Handles Plugin
  *
