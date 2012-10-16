@@ -141,7 +141,6 @@ Flotr.addType('lines', {
     if (!options.fill || options.fill && !options.fillBorder) context.stroke();
 
     fill();
-    console.log(options);
 
     function fill () {
       // TODO stacked lines
