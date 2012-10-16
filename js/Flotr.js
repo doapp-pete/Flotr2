@@ -225,7 +225,7 @@ Flotr = {
   floorInBase: function(n, base) {
     return base * Math.floor(n / base);
   },
-  drawText: function(ctx, text, x, y, style) {
+  drawText: function(ctx, text, x, y, style, xOffset, yOffset) {
     if (!ctx.fillText) {
       ctx.drawText(text, x, y, style);
       return;
@@ -237,17 +237,25 @@ Flotr = {
       textAlign: 'left',
       textBaseline: 'bottom',
       weight: 1,
-      angle: 0
+      angle: 0,
+      fontFamily: 'sans-serif'
     }, style);
+    
+    if (!xOffset) {
+        var xOffset = 0;
+    }
+    if (!yOffset) {
+        var yOffset = 0;
+    }
     
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(style.angle);
     ctx.fillStyle = style.color;
-    ctx.font = (style.weight > 1 ? "bold " : "") + (style.size*1.3) + "px sans-serif";
+    ctx.font = (style.weight > 1 ? "bold " : "") + (style.size*1.3) + "px " + style.fontFamily;
     ctx.textAlign = style.textAlign;
     ctx.textBaseline = style.textBaseline;
-    ctx.fillText(text, 0, 0);
+    ctx.fillText(text, xOffset, yOffset);
     ctx.restore();
   },
   getBestTextAlign: function(angle, style) {

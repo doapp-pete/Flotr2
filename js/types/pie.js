@@ -20,10 +20,16 @@ Flotr.addType('pie', {
     fill: true,            // => true to fill the area from the line to the x axis, false for (transparent) no fill
     fillColor: null,       // => fill color
     fillOpacity: 0.6,      // => opacity of the fill color, set to 1 for a solid fill, 0 hides the fill
+    fontWeight: 1.5,       // => weight of the label font
+    fontFamily: 'sans-serif',
     explode: 6,            // => the number of pixels the splices will be far from the center
     sizeRatio: 0.6,        // => the size ratio of the pie relative to the plot 
     startAngle: Math.PI/4, // => the first slice start angle
+    labelRadius: 1.0,      // => a percent used to move the labels in and out
+    labelCenter: false,    // => true to approx center the label
     labelFormatter: Flotr.defaultPieLabelFormatter,
+    labelShadowSize : 0,   // => add a shadow to the labels
+    labelShadowColor : 'rgba(0,0,0,.1)',
     pie3D: false,          // => whether to draw the pie in 3 dimenstions or not (ineffective) 
     pie3DviewAngle: (Math.PI/2 * 0.8),
     pie3DspliceThickness: 20
@@ -57,14 +63,13 @@ Flotr.addType('pie', {
       label         = options.labelFormatter(this.total, value),
       //plotTickness  = Math.sin(series.pie.viewAngle)*series.pie.spliceThickness / vScale;
       explodeCoeff  = explode + radius + 4,
-      distX         = Math.cos(bisection) * explodeCoeff,
-      distY         = Math.sin(bisection) * explodeCoeff,
+      distX         = Math.cos(bisection) * explodeCoeff * options.labelRadius,
+      distY         = Math.sin(bisection) * explodeCoeff * options.labelRadius,
       textAlign     = distX < 0 ? 'right' : 'left',
       textBaseline  = distY > 0 ? 'top' : 'bottom',
       style,
-      x, y,
-      distX, distY;
-    
+      x, y;
+      
     context.save();
     context.translate(width / 2, height / 2);
     context.scale(1, vScale);
@@ -93,8 +98,15 @@ Flotr.addType('pie', {
     style = {
       size : options.fontSize * 1.2,
       color : options.fontColor,
-      weight : 1.5
+      weight : options.fontWeight,
+      fontFamily : options.fontFamily
     };
+    
+    console.log(style);
+    
+    if (options.labelCenter) {
+        textAlign = 'center';
+    }
 
     if (label) {
       if (options.htmlText || !options.textEnabled) {
@@ -105,6 +117,11 @@ Flotr.addType('pie', {
       else {
         style.textAlign = textAlign;
         style.textBaseline = textBaseline;
+        if (options.labelShadowSize != 0) {
+            style.color = options.labelShadowColor;
+            Flotr.drawText(context, label, distX, distY, style, options.labelShadowSize, options.labelShadowSize);
+            style.color = options.fontColor;
+        }
         Flotr.drawText(context, label, distX, distY, style);
       }
     }
@@ -132,6 +149,7 @@ Flotr.addType('pie', {
   plotSlice : function (x, y, radius, startAngle, endAngle, context) {
     context.beginPath();
     context.moveTo(x, y);
+    
     context.arc(x, y, radius, startAngle, endAngle, false);
     context.lineTo(x, y);
     context.closePath();
