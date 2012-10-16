@@ -18,7 +18,7 @@ Flotr.Date = {
   format: function(d, format, mode) {
     if (!d) return;
 
-    console.log(d);
+    
     // We should maybe use an "official" date format spec, like PHP date() or ColdFusion 
     // http://fr.php.net/manual/en/function.date.php
     // http://livedocs.adobe.com/coldfusion/8/htmldocs/help.html?content=functions_c-d_29.html
@@ -38,7 +38,6 @@ Flotr.Date = {
         D: Flotr.Date.dayNames[get(d, 'Day', mode)],
       };
     
-    console.log(tokens);
 
     function leftPad(n){
       n += '';

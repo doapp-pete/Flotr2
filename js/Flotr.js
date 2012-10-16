@@ -170,10 +170,10 @@ Flotr = {
 	    	  ret = Flotr.Date.format(dateObj, '%D, %f %d, %y', "UTC");
 	    	  break;
 	      case "hour": 
-	    	  ret = Date.format(dateObj, '%f %d, %y', "UTC");
+	    	  ret = Flotr.Date.format(dateObj, '%f %d, %y', "UTC");
 	    	  break;
 	      case "minute": 
-	    	  ret = Date.format(dateObj, '%f %d, %y', "UTC");
+	    	  ret = Flotr.Date.format(dateObj, '%f %d, %y', "UTC");
 	    	  break;
 	    }
 	   return ret;

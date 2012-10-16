@@ -91,7 +91,7 @@
                     opacity: s.mouse.fillOpacity
                 });
                 octx.translate(this.plotOffset.left, this.plotOffset.top);
-
+                
                 if (!this.hit.executeOnType(s, 'drawHit', n)) {
                     var xa = n.xaxis,
                         ya = n.yaxis;

@@ -141,12 +141,32 @@ Flotr.addType('lines', {
     if (!options.fill || options.fill && !options.fillBorder) context.stroke();
 
     fill();
+    console.log(options);
 
     function fill () {
       // TODO stacked lines
       if(!shadowOffset && options.fill && start){
         x1 = xScale(start[0]);
-        context.fillStyle = options.fillStyle;
+        
+        var img = new Image();
+        img.src = 'http://sandbox.local/graph/graph_bg.png';
+//        img.onload = function(){
+//
+//            // create pattern
+//            var ptrn = ctx.createPattern(img,'repeat');
+//            context.fillStyle = ptrn;
+//            context.fillRect(0,0,150,150);
+//
+//          }
+        
+        
+          // create pattern
+          var ptrn = context.createPattern(img,'repeat');
+          context.fillStyle = ptrn;
+          context.globalAlpha = .4;
+        
+        
+      //  context.fillStyle = options.fillStyle;
         context.lineTo(x2, zero);
         context.lineTo(x1, zero);
         context.lineTo(x1, yScale(start[1]));
