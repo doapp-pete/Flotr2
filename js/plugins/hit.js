@@ -394,12 +394,43 @@
 
                 // Default
             } else {
-                if (p.charAt(0) == 'n') pos += 'bottom:' + (m - top - n.yaxis.d2p(n.y) + this.canvasHeight) + 'px;top:auto;';
-                else if (p.charAt(0) == 's') pos += 'top:' + (m + top + n.yaxis.d2p(n.y)) + 'px;bottom:auto;';
-                if (p.charAt(1) == 'e') pos += 'left:' + (m + left + n.xaxis.d2p(n.x)) + 'px;right:auto;';
-                else if (p.charAt(1) == 'w') pos += 'right:' + (m - left - n.xaxis.d2p(n.x) + this.canvasWidth) + 'px;left:auto;';
-            }
+            	
+            	//This modification looked to attempt to keep the tool tip inside the particular flotr box.
+            	var wT = m + left + n.xaxis.d2p(n.x);
+            	var hT = m - top - n.yaxis.d2p(n.y);
+            	
+            	
+            	if(wT>this.canvasWidth){
+            		pos += 'right:' + (m - left - n.xaxis.d2p(n.x) + this.canvasWidth) + 'px;left:auto;';
+            	}
+            	else {
+            		pos += 'left:' + wT + 'px;right:auto;';
+            	}
+            	
+            	if((hT+this.canvasHeight) > this.canvasHeight){
+            		pos += 'top:' + (m + top + n.yaxis.d2p(n.y)) + 'px;bottom:auto;';
+            	}
+            	else {
+            		pos += 'bottom:' + (hT + this.canvasHeight) + 'px;top:auto;';
+            	}
+            
+            	
+//            	
+//                if (p.charAt(0) == 'n'){ 
+//                	pos += 'bottom:' + (m - top - n.yaxis.d2p(n.y) + this.canvasHeight) + 'px;top:auto;';
+//                }
+//                else if (p.charAt(0) == 's'){
+//                	 pos += 'top:' + (m + top + n.yaxis.d2p(n.y)) + 'px;bottom:auto;';
+//                }
+//                
 
+//                if (p.charAt(1) == 'e') {
+//                	pos += 'left:' + (m + left + n.xaxis.d2p(n.x)) + 'px;right:auto;';
+//                }
+//                else if (p.charAt(1) == 'w'){  
+//                	pos += 'right:' + (m - left - n.xaxis.d2p(n.x) + this.canvasWidth) + 'px;left:auto;'; 
+//                }
+            }
             elStyle += pos;
             mouseTrack.style.cssText = elStyle;
 
