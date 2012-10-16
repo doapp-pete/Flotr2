@@ -54,13 +54,13 @@ yepnope([
 	  var
 	  d1    = [],
 	  d2    = [],
+	  d3 	= [],
 	  start = new Date("2009/01/01 01:00").getTime(),
 	  options,
 	  graph,
 	  i, x, o,
 	  container = document.getElementById("placeholder");
 	  
-	  d2[[],[],[],[]];
 	  
 	  d1.push([1230793200000,4]);
 	  d1.push([1230879600000,13]);
@@ -71,10 +71,18 @@ yepnope([
 	  d2.push([1230879600000,8]);
 	  d2.push([1230966000000,13]);
 	  d2.push([1231052400000,14]);
+	  
+
+	  d3.push([1230793200000,25]);
+	  d3.push([1230879600000,13]);
+	  d3.push([1230966000000,16]);
+	  d3.push([1231052400000,12]);
 	
 	// Draw Graph
-	  graph = Flotr.draw(container, [ {data:d1,format:{time:true, label:"Unique Users",labelImage:"http://sandbox.local/blue.png"}}, {data:d2, format:{label:"New Users",labelImage:"http://sandbox.local/gray.png"},lines:{fill:true}} ], {
-	  colors:['#8cbdd7','#a1a1a1'],
+	  graph = Flotr.draw(container, [ {data:d1,format:{time:true, label:"Unique Users",labelImage:"http://sandbox.local/blue.png"}}, 
+	                                  {data:d2, format:{label:"New Users",labelImage:"http://sandbox.local/gray.png"},lines:{fill:true}}, 
+	                                  {data:d3, format:{label:"Android",labelImage:"http://sandbox.local/gray.png"}} ], {
+	  colors:['#8cbdd7','#a1a1a1', '#CB4B4B'],
 	  shadowSize:0,
 	  fontColor:"#616161",
 	  xaxis: {

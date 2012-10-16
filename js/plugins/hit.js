@@ -407,7 +407,7 @@
             		pos += 'left:' + wT + 'px;right:auto;';
             	}
             	
-            	if((hT+this.canvasHeight) > this.canvasHeight){
+            	if((hT+this.canvasHeight+90) > this.canvasHeight){
             		pos += 'top:' + (m + top + n.yaxis.d2p(n.y)) + 'px;bottom:auto;';
             	}
             	else {
