@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Flotr Example Index Page</title>
+<link rel="stylesheet" href="lib/codemirror/lib/codemirror.css"
+	type="text/css" />
+<link rel="stylesheet" href="examples.css" type="text/css" />
+<link rel="stylesheet" href="editor.css" type="text/css" />
+<style>
+.line_pop_over {
+	border: 1px solid #9f9f9f;
+	float: left;
+	padding: 5px 10px;
+	background-color:#ffffff;
+	font-size: 12px;
+	font-family: "Helvetica Neue";
+	line-height: 22px;
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.18);
+	-moz-box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.18);
+	-webkit-box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.18);
+}
+
+h6 {
+	font-size: 12px;
+	margin: 0px;
+	padding: 0px;
+	margin-bottom: 2px;
+}
+
+.line_pop_over span {
+	font-weight: bold;
+}
+
+.line_pop_over img {
+	margin-right: 8px;
+}
+</style>
+</head>
+
+<body>
+	<h1>Flot Examples</h1>
+	<div id="placeholder" style="width: 600px; height: 300px;"></div>
+
+</body>
+
+<script type="text/javascript" src="../build/underscore.min.js"></script>
+<script type="text/javascript" src="../build/bean.min.js"></script>
+<script type="text/javascript" src="../build/lib.min.js"></script>
+<script type="text/javascript" src="../build/flotr2.js"></script>
+<script type="text/javascript">
+    var
+    d1    = [],
+    d2    = [],
+    start = new Date("2009/01/01 01:00").getTime(),
+    options,
+    graph,
+    i, x, o,
+    container = document.getElementById("placeholder");
+
+    d2[[],[],[],[]];
+
+    d1.push([1230793200000,4]);
+    d1.push([1230879600000,13]);
+    d1.push([1230966000000,17]);
+    d1.push([1231052400000,23]);
+
+    d2.push([1230793200000,5]);
+    d2.push([1230879600000,8]);
+    d2.push([1230966000000,13]);
+    d2.push([1231052400000,14]);
+
+    // Draw Graph
+    graph = Flotr.draw(container, [ {data:d1,format:{time:true, label:"Unique Users",labelImage:"http://sandbox.local/blue.png"}}, {data:d2, format:{label:"New Users",labelImage:"http://sandbox.local/gray.png"},lines:{fill:true}} ], {
+        colors:['#8cbdd7','#a1a1a1'],
+        shadowSize:0,
+        fontColor:"#616161",
+        xaxis: {
+            mode: 'time',
+        }, 
+        yaxis: {
+            noTicks:2
+        },
+        grid: {
+            backgroundColor:"#efefef",
+            horizontalLines: true,
+            verticalLines: false,
+            color:"#e1e1e1"
+        },
+        mouse: {
+            track: true,
+            trackAll: true,
+            trackAllPoints: true,
+            relative: true,
+            fillColor:"#efefef",
+            fillOpacity:1,
+            trackFormatter: Flotr.customTrackFormater
+        }
+    });
+//    console.log(Flotr);
+//      if (Flotr.ExamplesCallback) {
+//        Flotr.ExamplesCallback();
+//      } else {
+//        Examples = new Flotr.Examples({
+//          node : document.getElementById('examples')
+//        });
+//      }
+
+</script>
+
+</html>
