@@ -80,7 +80,7 @@ yepnope([
 	
 	// Draw Graph
 	  graph = Flotr.draw(container, [ {data:d1,format:{time:true, label:"Unique Users",labelImage:"http://sandbox.local/blue.png"}}, 
-	                                  {data:d2, format:{label:"New Users",labelImage:"http://sandbox.local/gray.png"},lines:{fill:true}}, 
+	                                  {data:d2, format:{label:"New Users",labelImage:"http://sandbox.local/gray.png"},lines:{fill:true, fillUrl: 'http://sandbox.local/graph/graph_bg.png'}}, 
 	                                  {data:d3, format:{label:"Android",labelImage:"http://sandbox.local/gray.png"}} ], {
 	  colors:['#8cbdd7','#a1a1a1', '#CB4B4B'],
 	  shadowSize:0,

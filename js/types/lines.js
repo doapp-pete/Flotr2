@@ -8,7 +8,8 @@ Flotr.addType('lines', {
     fillColor: null,       // => fill color
     fillOpacity: 0.4,      // => opacity of the fill color, set to 1 for a solid fill, 0 hides the fill
     steps: false,          // => draw steps
-    stacked: false         // => setting to true will show stacked lines, false will show normal lines
+    stacked: false,         // => setting to true will show stacked lines, false will show normal lines
+    fillUrl: false			// => Allows you to set a url for a fill color; you should only have one of these though.
   },
 
   stack : {
@@ -52,7 +53,6 @@ Flotr.addType('lines', {
   },
 
   plot : function (options, shadowOffset, incStack) {
-
     var
       context   = options.context,
       width     = options.width, 
@@ -144,11 +144,11 @@ Flotr.addType('lines', {
 
     function fill () {
       // TODO stacked lines
-      if(!shadowOffset && options.fill && start){
+      if(!shadowOffset && options.fill && start && options.fillUrl){
         x1 = xScale(start[0]);
         
         var img = new Image();
-        img.src = 'http://sandbox.local/graph/graph_bg.png';
+        img.src = options.fillUrl;
 //        img.onload = function(){
 //
 //            // create pattern

@@ -1,4 +1,44 @@
-<!DOCTYPE html>
+<?php 
+
+$appId= '7f6b79cc84e7849f95246e863c7cf059';
+if(isset($_GET['appId'])){
+	$appId = $_GET['appId'];
+}
+
+//select everything.
+try {
+	$mongInst = new Mongo('pete.server');
+	$dbSel = $mongInst->selectDB('generic_metrics');
+	$col = $dbSel->selectCollection('i_usage_item');
+	$cursor = $col->find(array('_id.appId'=>$appId));
+	
+}
+catch(Exception $e){
+  print_r($e);
+}
+
+$appMetrics = array();
+$i=0;
+
+foreach ($cursor as $obj) {
+	$unixTime = strtotime($obj['_id']['date']);
+	if(!isset($appMetrics[$unixTime])){
+		$appMetrics[$unixTime] = array('iphone'=>0, 'android'=>0, 'ipad'=>0, 'ipod'=>0);
+	}
+	
+	if(isset($appMetrics[$unixTime][$obj['_id']['device']])){
+		$appMetrics[$unixTime][$obj['_id']['device']]+=$obj['value']['total_users'];
+	}
+	else {
+		print_r($obj);
+		exit;
+	}
+	$i++;
+ 	
+  
+}
+ksort($appMetrics);
+?><!DOCTYPE html>
 <html>
 
 
@@ -49,95 +89,57 @@ h6 {
 var
 d1    = [],
 d2    = [],
-start = new Date("2012/04/25 00:00").getTime(),
-options,
-graph,
-i, x, o,
+d3    = [],
+d4    = [];
+
+<?php 
+
+foreach($appMetrics as $key=>$value){
+  echo('d1.push(['.$key.'000,'.$value['iphone'].']);'."\n");
+  echo('d2.push(['.$key.'000,'.$value['android'].']);'."\n");
+  echo('d3.push(['.$key.'000,'.$value['ipad'].']);'."\n");
+  echo('d4.push(['.$key.'000,'.$value['ipod'].']);'."\n");
+}
+?>
+</script>
+
+<script type="text/javascript" src="/flotr2.min.js"></script>
+<script>
+
+var graph,
 container = document.getElementById("placeholder");
 
-<?php 
-//select everything.
-try {
-$mongInst = new Mongo();
-$dbSel = $mongInst->selectDB('metric_agg');
-$col = $dbSel->selectCollection('DailyItems');
-$cursor = $col->find(array('_metaData.appId'=>'fac245c0cd451a91e8fa12de5db066de'));
 
-$todaysMetrics = array();
-$todaysMetrics = array();
-$devices = array();
-$uDevices = array();
-$i=0;
-$e=0;
-}
-catch(Exception $e){
-  print_r($e);
-}
-foreach ($cursor as $obj) {
-  $devices[$obj['_metaData']['deviceType']]=0;
-  $date = $obj['_metaData']['date'];
-  
-  foreach($obj['hours'] as $hour=>$data){
-        $trackedDate = $date.' ';
-    if($hour<10){
-      $trackedDate.='0';
-    }
-    $trackedDate.=$hour.':00:00 GMT';
-
-
-    if(!isset($todaysMetrics[strtotime($trackedDate)])){
-      $todaysMetrics[strtotime($trackedDate)] =0;
-    }
-    
-    $todaysMetrics[strtotime($trackedDate)]  += $data['userSessions'];
-    $i+=$data['userSessions'];
-    $devices[$obj['_metaData']['deviceType']]+= $data['userSessions'];
-  }
-  
-}
-
-$uniqueSessions = array();
-foreach ($cursor as $obj) {
-  $uDevices[$obj['_metaData']['deviceType']]=0;
-  $date = $obj['_metaData']['date'];
-
-  foreach($obj['hours'] as $hour=>$data){
-    $trackedDate = $date.' ';
-    if($hour<10){
-      $trackedDate.='0';
-    }
-    $trackedDate.=$hour.':00:00 GMT';
-
-
-    if(!isset($uniqueSessions[strtotime($trackedDate)])){
-      $uniqueSessions[strtotime($trackedDate)] =0;
-    }
-
-    $uniqueSessions[strtotime($trackedDate)]  += $data['userNewSessions'];
-    $e+=$data['userNewSessions'];
-    $uDevices[$obj['_metaData']['deviceType']]+= $data['userNewSessions'];
-  }
-
-}
-
-foreach($todaysMetrics as $key=>$value){
-  echo('d1.push(['.$key.'000,'.$value.']);');
-}
-
-foreach($uniqueSessions as $key=>$value){
-  echo('d2.push(['.$key.'000,'.$value.']);');
-}
-
-?>
-
+// Draw Graph
+graph = Flotr.draw(container, [ {data:d1,format:{time:true, label:"iPhone",labelImage:"http://sandbox.local/blue.png"}}, 
+                                {data:d2, format:{label:"Android",labelImage:"http://sandbox.local/gray.png"},lines:{fill:false}}, 
+                                {data:d3, format:{label:"iPad",labelImage:"http://sandbox.local/gray.png"}},
+                                {data:d4, format:{label:"iPod",labelImage:"http://sandbox.local/blue.png"}} ], {
+	colors:['#8cbdd7','#a1a1a1', '#CB4B4B', '#C812BA'],
+	shadowSize:0,
+	fontColor:"#616161",
+	xaxis: {
+	  mode: 'time',
+	}, 
+	yaxis: {
+	  noTicks:2
+	},
+	grid: {
+	  backgroundColor:"#efefef",
+	  horizontalLines: true,
+	  verticalLines: false,
+	  color:"#e1e1e1"
+	},
+	mouse: {
+		track: true,
+		trackAll: true,
+		trackAllPoints: true,
+		relative: true,
+		fillColor:"#efefef",
+		fillOpacity:1,
+		trackFormatter: Flotr.customTrackFormater
+	}
+});
 
 </script>
-<?php 
-echo('<pre>');
-echo('Total: '.$i.'<br />Unique: '.$e.'<br />');
-print_r($devices);
-print_r($uDevices);
-?>
-<script type="text/javascript" src="../lib/yepnope.js"></script>
-<script type="text/javascript" src="js/includes.dev.js"></script>
 </html>

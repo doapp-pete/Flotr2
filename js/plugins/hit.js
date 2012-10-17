@@ -400,14 +400,14 @@
             	var hT = m - top - n.yaxis.d2p(n.y);
             	
             	
-            	if(wT>this.canvasWidth){
+            	if(wT+145>this.canvasWidth){
             		pos += 'right:' + (m - left - n.xaxis.d2p(n.x) + this.canvasWidth) + 'px;left:auto;';
             	}
             	else {
             		pos += 'left:' + wT + 'px;right:auto;';
             	}
             	
-            	if((hT+this.canvasHeight+90) > this.canvasHeight){
+            	if((hT+this.canvasHeight+105) > this.canvasHeight){
             		pos += 'top:' + (m + top + n.yaxis.d2p(n.y)) + 'px;bottom:auto;';
             	}
             	else {
